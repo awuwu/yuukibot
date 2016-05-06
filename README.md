@@ -10,16 +10,16 @@ Commands
 ---
 
 Command | Description |
---- | :--- 
-`/awuwu`   | Makes YuukiBot Awuwu. Random Number of 'wu's are appended to the end. 
+--- | :---
+`/awuwu`   | Makes YuukiBot Awuwu. Random Number of 'wu's are appended to the end.
 `/uwah`    | Makes YuukiBot Embarassed.
 `/win`     | Displays a GIF from the win/ directory.
 `/points`  | Displays a GIF from the points/ directory.
 `/quote`   | Picks a random quote from the quote.txt file.
 `/fortune` | Takes input and processes mystical, mythical RNG to return a vaugely in-character answer somehow.
 `/spiral`  | Displays a GIF from the spiral/ directory.
-`/bray`    | Makes YuukiBot Bray. 
-`/me`      | Returns input after /me in bold, similar to how /me worked in IRC. 
+`/bray`    | Makes YuukiBot Bray.
+`/me`      | Returns input after /me in bold, similar to how /me worked in IRC.
 `/tweet`   | Sends a Tweet to the userpage which is defined in the twitter section of the config file. For more on Twitter API, visit http://api.twitter.com/ for details. Can only be run by the user identified in `telegram_handle`. |
 
 Note: commands will work even in a chatroom with multiple bots.
@@ -56,7 +56,7 @@ Requirements
 Installing
 ---
 
-These instructions are assuming you are running on Debian 8 or a recent distribution of Ubuntu (Code tested on Debian 8). I highly reccomend a virtualenv with pip. 
+These instructions are assuming you are running on Debian 8 or a recent distribution of Ubuntu (Code tested on Debian 8). I highly reccomend a virtualenv with pip.
 
 * `git clone https://github.com/awuwu/yuukibot.git`
 * `virtualenv yuukibot/env`
@@ -82,7 +82,7 @@ Executing
 Adding Content
 ---
 
-Because of the nature that YuukiBot pulls information, you can add content like gifs, quotes, fortune entries, etc while the bot is operational, meaning you don't have to restarted.
+Because of the nature that YuukiBot pulls information, you can add content like gifs, quotes, fortune entries, etc while the bot is operational, meaning you don't have to restart.
 
 License
 ---
