@@ -1,4 +1,4 @@
-YuukiBot v1.1.0
+YuukiBot v1.1.1
 ===
 
 About YuukiBot
@@ -20,14 +20,15 @@ Command | Description |
 `/spiral`  | Displays a GIF from the spiral/ directory.
 `/bray`    | Makes YuukiBot Bray.
 `/me`      | Returns input after /me in bold, similar to how /me worked in IRC.
-`/tweet`   | Sends a Tweet to the userpage which is defined in the twitter section of the config file. For more on Twitter API, visit http://api.twitter.com/ for details. Can only be run by the user identified in `telegram_handle`. |
+`/tweet`   | Sends a Tweet to the userpage which is defined in the twitter section of the config file. For more on Twitter API, visit http://api.twitter.com/ for details. Can only be run by the user identified in `telegram_handle`. 
+`/about`   | Returns an about message on YuukiBot |
 
 Note: commands will work even in a chatroom with multiple bots.
 
 Versioning
 ---
 
-Versioning is based on Major, Minor, Bugfix design. 1.1.0 is the current version.
+Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version.
 
  * 0.1.0 -- Initial Release
  * 0.2.0 -- Original Coding
@@ -35,6 +36,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.0 is the current version
  * 0.4.0 -- Fixed up formatting and parsing
  * 1.0.0 -- Recoded Bot to Adhere to telegram-python-bot's ext class rather than the main class.
  * 1.1.0 -- Added More Commands, Restructred code to work off of a config file.
+ * 1.1.1 -- Added about command, added some quotes.
 
 Contributing
 ---

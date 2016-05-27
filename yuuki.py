@@ -91,6 +91,10 @@ def magic(bot,update):
 	myline =random.choice(lines)
 	bot.sendMessage(chat_id=chat_id, text=myline)
 
+def about(bot,update):
+	chat_id = update.message.chat_id
+	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.1 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
+
 updater = Updater(config.get('Telegram','api_key'))
 
 updater.dispatcher.addHandler(CommandHandler('awuwu', awuwu))
@@ -103,6 +107,7 @@ updater.dispatcher.addHandler(CommandHandler('win', win))
 updater.dispatcher.addHandler(CommandHandler('me', me))
 updater.dispatcher.addHandler(CommandHandler('tweet', twitter))
 updater.dispatcher.addHandler(CommandHandler('fortune', magic))
+updater.dispatcher.addHandler(CommandHandler('about', about))
 
 #aliases
 updater.dispatcher.addHandler(CommandHandler('shouldi', magic))
