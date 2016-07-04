@@ -1,6 +1,7 @@
 import logging, os, random, ConfigParser
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Emoji, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 import telegram, twitter
 
 config = ConfigParser.RawConfigParser()
@@ -10,6 +11,69 @@ api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
 		  access_token_key=config.get('Twitter','access_token_key'),
 		  access_token_secret=config.get('Twitter','access_token_secret'))
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+
+MENU, AWAIT_CONFIRMATION, AWAIT_INPUT, DEBUG = range(4)
+
+try:
+	YES, NO = (Emoji.THUMBS_UP_SIGN.decode('utf-8'), Emoji.THUMBS_DOWN_SIGN.decode('utf-8'))
+except AttributeError:
+	YES, NO = (Emoji.THUMBS_UP_SIGN, Emoji.THUMBS_DOWN_SIGN)
+
+state = dict()
+context = dict()
+values = dict()
+
+def set_value(bot, update):
+	chat_id = update.message.chat_id
+	user_id = update.message.from_user.id
+	user_state = state.get(chat_id, MENU)
+
+	if user_state == MENU:
+		state[user_id] = DEBUG
+		bot.sendMessage(chat_id, text="Please enter your settings value",reply_markup=ForceReply())
+
+def entered_value(bot, update):
+	chat_id = update.message.chat_id
+	user_id = update.message.from_user.id
+	chat_state = state.get(user_id, MENU)
+
+	if chat_state == DEBUG:
+		del state[user_id]
+		bot.sendMessage(chat_id, text="How did you get here?")
+
+	if chat_state == AWAIT_INPUT:
+		state[user_id] = AWAIT_CONFIRMATION
+
+		context[user_id] = update.message.text
+		reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(YES, callback_data=YES),
+						      InlineKeyboardButton(NO, callback_data=NO)]])
+		bot.sendMessage(chat_id, text="Are you sure?", reply_markup=reply_markup)
+
+def confirm_value(bot, update):
+	query = update.callback_query
+	chat_id = query.message.chat_id
+	user_id = query.from_user.id
+	text = query.data
+	user_state = state.get(user_id, MENU)
+	user_context = context.get(user_id, None)
+
+	if user_state == AWAIT_CONFIRMATION:
+		del state[user_id]
+		del context[user_id]
+		bot.answerCallbackQuery(query.id, text="Ok!")
+		if text == YES:
+			values[user_id] = user_context
+			bot.editMessageText(text="Changed value to %s." % values[user_id],
+				chat_id=chat_id,
+				message_id=query.message.message_id)
+		else:
+			bot.editMessageText(text="Alright, value is still %s." %
+				values.get(user_id, 'not set'),
+				chat_id=chat_id,
+				message_id=query.message.message_id)
+
 
 def awuwu(bot, update):
 	chat_id = update.message.chat_id
@@ -23,6 +87,39 @@ def awuwu(bot, update):
 		awu = awu + "wu"
 		i = i + 1
 	bot.sendMessage(chat_id=chat_id, text=awu)
+
+def awu(bot, update):
+	chat_id = update.message.chat_id
+	user_id = update.message.from_user.id
+	chat_state = state.get(user_id, MENU)
+
+	state[user_id] = AWAIT_CONFIRMATION
+
+	context[user_id] = update.message.text
+	reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(update.message.from_user.name+": Re-roll Fortune", callback_data=YES)]])
+        bot.sendChatAction(chat_id=chat_id,
+			    action=telegram.ChatAction.TYPING)
+	lines = open(config.get('General', 'path')+'fortune.txt').read().splitlines()
+	myline =random.choice(lines)
+	bot.sendMessage(chat_id=chat_id, text=myline, reply_markup=reply_markup)
+	
+def editAwu2(bot, update):
+	query = update.callback_query
+	chat_id = query.message.chat_id
+	user_id = query.from_user.id
+	text = query.data
+	user_state = state.get(user_id, MENU)
+	user_context = context.get(user_id, None)
+
+	if user_state == AWAIT_CONFIRMATION:
+		del state[user_id]
+		del context[user_id]
+		bot.answerCallbackQuery(query.id, text="Ok!")
+		if text == YES:
+			lines = open(config.get('General', 'path')+'fortune.txt').read().splitlines()
+			myline =random.choice(lines)
+			bot.editMessageText(chat_id=chat_id, text=myline, message_id=query.message.message_id)
+
 
 def uwah(bot, update):
 	chat_id = update.message.chat_id
@@ -95,6 +192,9 @@ def about(bot,update):
 	chat_id = update.message.chat_id
 	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.1 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
 
+def error(bot, update, error):
+	logging.warning('Update "%s" caused error "%s"' % (update, error))
+
 updater = Updater(config.get('Telegram','api_key'))
 
 updater.dispatcher.addHandler(CommandHandler('awuwu', awuwu))
@@ -106,7 +206,7 @@ updater.dispatcher.addHandler(CommandHandler('spiral', spiral))
 updater.dispatcher.addHandler(CommandHandler('win', win))
 updater.dispatcher.addHandler(CommandHandler('me', me))
 updater.dispatcher.addHandler(CommandHandler('tweet', twitter))
-updater.dispatcher.addHandler(CommandHandler('fortune', magic))
+updater.dispatcher.addHandler(CommandHandler('fortune', awu))
 updater.dispatcher.addHandler(CommandHandler('about', about))
 
 #aliases
@@ -115,10 +215,16 @@ updater.dispatcher.addHandler(CommandHandler('shouldwe', magic))
 updater.dispatcher.addHandler(CommandHandler('cani', magic))
 updater.dispatcher.addHandler(CommandHandler('mayi', magic))
 
-
-
-
-
+#callback
+# The command
+updater.dispatcher.add_handler(CommandHandler('set', set_value))
+#updater.dispatcher.add_handler(CommandHandler('awu', awu))
+# The answer
+updater.dispatcher.add_handler(MessageHandler([Filters.text], entered_value))
+# The confirmation
+#updater.dispatcher.add_handler(CallbackQueryHandler(confirm_value))
+updater.dispatcher.add_handler(CallbackQueryHandler(editAwu2))
+updater.dispatcher.add_error_handler(error)
 
 
 updater.start_polling()
