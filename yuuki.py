@@ -190,7 +190,22 @@ def magic(bot,update):
 
 def about(bot,update):
 	chat_id = update.message.chat_id
-	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.1 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
+	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.2 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
+
+def moo(bot, update):
+	chat_id = update.message.chat_id
+	message = update.message.text.encode('utf-8')
+        bot.sendChatAction(chat_id=chat_id,
+			    action=telegram.ChatAction.TYPING)
+	awu = "moo"
+	rang = random.randrange(1,60)
+	i = 0
+	while i <= rang:
+		awu = awu + "ooo"
+		i = i + 1
+	awu = awu+"~ @w@"
+	bot.sendMessage(chat_id=chat_id, text=awu)
+
 
 def error(bot, update, error):
 	logging.warning('Update "%s" caused error "%s"' % (update, error))
@@ -208,6 +223,7 @@ updater.dispatcher.addHandler(CommandHandler('me', me))
 updater.dispatcher.addHandler(CommandHandler('tweet', twitter))
 updater.dispatcher.addHandler(CommandHandler('fortune', awu))
 updater.dispatcher.addHandler(CommandHandler('about', about))
+updater.dispatcher.addHandler(CommandHandler('moo', moo))
 
 #aliases
 updater.dispatcher.addHandler(CommandHandler('shouldi', magic))
