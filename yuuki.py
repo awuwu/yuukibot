@@ -86,7 +86,12 @@ def awuwu(bot, update):
 	while i <= rang:
 		awu = awu + "wu"
 		i = i + 1
-	bot.sendMessage(chat_id=chat_id, text=awu)
+
+	faces = ["@w@", "<w<", ">w>", ">//w//<", "/)\\\\\\\\(\\", "@//@", "","","","","","","","","","","",""]
+
+	rang2 = random.randrange(0,len(faces)-1)
+
+	bot.sendMessage(chat_id=chat_id, text=awu+" "+faces[rang2])
 
 def awu(bot, update):
 	chat_id = update.message.chat_id
@@ -131,7 +136,12 @@ def bray(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 	bot.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.TYPING)
-	bot.sendMessage(chat_id=chat_id, text="Hee haaawwww~ @w@")
+
+	faces = ["@w@", "<w<", ">w>", ">//w//<", "/)\\\\\\\\(\\", "@//@", ""]
+
+	rang2 = random.randrange(0,len(faces)-1)
+
+	bot.sendMessage(chat_id=chat_id, text="Hee haaawwww~ "+faces[rang2])
 
 def quote(bot, update):
 	chat_id = update.message.chat_id
@@ -190,7 +200,7 @@ def magic(bot,update):
 
 def about(bot,update):
 	chat_id = update.message.chat_id
-	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.2 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
+	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.3 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
 
 def moo(bot, update):
 	chat_id = update.message.chat_id
@@ -198,12 +208,19 @@ def moo(bot, update):
         bot.sendChatAction(chat_id=chat_id,
 			    action=telegram.ChatAction.TYPING)
 	awu = "moo"
-	rang = random.randrange(1,60)
+	rang = random.randrange(1,42)
 	i = 0
 	while i <= rang:
 		awu = awu + "ooo"
 		i = i + 1
-	awu = awu+"~ @w@"
+	awu = awu+"~ "
+
+	faces = ["@w@", "<w<", ">w>", ">//w//<", "/)\\\\\\\\(\\", "@//@", ""]
+
+	rang2 = random.randrange(0,len(faces)-1)
+	
+	awu = awu+faces[rang2]
+
 	bot.sendMessage(chat_id=chat_id, text=awu)
 
 

@@ -39,6 +39,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version
  * 1.1.0 -- Added More Commands, Restructred code to work off of a config file.
  * 1.1.1 -- Added about command, added some quotes.
  * 1.1.2 -- Moo command, Begin concepts for new command structure
+ * 1.1.3 -- Change lengths, random face picker
 
 Contributing
 ---
