@@ -208,7 +208,7 @@ def moo(bot, update):
         bot.sendChatAction(chat_id=chat_id,
 			    action=telegram.ChatAction.TYPING)
 	awu = "moo"
-	rang = random.randrange(1,42)
+	rang = random.randrange(1,20)
 	i = 0
 	while i <= rang:
 		awu = awu + "ooo"
