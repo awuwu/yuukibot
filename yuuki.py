@@ -1,11 +1,23 @@
-import logging, os, random, ConfigParser
+import logging, os, random, ConfigParser, datetime
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 from telegram import Emoji, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from pymongo import MongoClient
 import telegram, twitter
 
 config = ConfigParser.RawConfigParser()
 config.read('config.cfg')
+
+client = MongoClient()
+
+db = client['yuukibot2']
+
+users = db.users
+pts = db.points
+
+channels = db.channels
+
+yuuki_version = "v1.2.0"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -13,6 +25,8 @@ api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  access_token_secret=config.get('Twitter','access_token_secret'))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+
+
 
 MENU, AWAIT_CONFIRMATION, AWAIT_INPUT, DEBUG = range(4)
 
@@ -24,6 +38,25 @@ except AttributeError:
 state = dict()
 context = dict()
 values = dict()
+
+def doChannelCheck(channel):
+	call = channels.find_one({"channel":channel})
+	if call == None:
+		post = {
+			"channel":channel,
+			"version":yuuki_version
+			}
+		channels.insert_one(post)
+		return True
+	else:
+		if call['version'] != yuuki_version:
+			channels.update_one({"channel":channel},{"$set": {"version": str(yuuki_version)}})
+			return True
+		return False
+
+def doUpdateMessage(bot, update):
+	if doChannelCheck(update.message.chat_id):
+		bot.sendMessage(update.message.chat_id, text="Awu! Looks like this is the first time I've been run in this chat with my new version! Check out https://github.com/awuwu/yuukibot/wiki/Commands for more info!")
 
 def set_value(bot, update):
 	chat_id = update.message.chat_id
@@ -93,6 +126,8 @@ def awuwu(bot, update):
 
 	bot.sendMessage(chat_id=chat_id, text=awu+" "+faces[rang2])
 
+	doUpdateMessage(bot, update)
+
 def awu(bot, update):
 	chat_id = update.message.chat_id
 	user_id = update.message.from_user.id
@@ -107,6 +142,8 @@ def awu(bot, update):
 	lines = open(config.get('General', 'path')+'fortune.txt').read().splitlines()
 	myline =random.choice(lines)
 	bot.sendMessage(chat_id=chat_id, text=myline, reply_markup=reply_markup)
+
+	doUpdateMessage(bot, update)
 	
 def editAwu2(bot, update):
 	query = update.callback_query
@@ -126,11 +163,15 @@ def editAwu2(bot, update):
 			bot.editMessageText(chat_id=chat_id, text=myline, message_id=query.message.message_id)
 
 
+
+
 def uwah(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 	bot.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.TYPING)
 	bot.sendMessage(chat_id=chat_id, text="Uwahh! /)\\\\\\\\(\\")
+	doUpdateMessage(bot, update)
+
 
 def bray(bot, update):
 	chat_id = update.message.chat_id
@@ -142,6 +183,8 @@ def bray(bot, update):
 	rang2 = random.randrange(0,len(faces)-1)
 
 	bot.sendMessage(chat_id=chat_id, text="Hee haaawwww~ "+faces[rang2])
+	doUpdateMessage(bot, update)
+
 
 def quote(bot, update):
 	chat_id = update.message.chat_id
@@ -155,14 +198,36 @@ def quote(bot, update):
 		bot.sendPhoto(chat_id=chat_id, photo=myline.lstrip("PHOTO:"))
 	else:
 		bot.sendMessage(chat_id=chat_id, text=myline)
+	doUpdateMessage(bot, update)
+
 
 	
 def points(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 	points = random.choice(os.listdir(config.get('General','path')+"points/"))
+        usr = update.message.from_user.username
+	t = ""
+	if message.find(" @") != -1:
+	        if usr.lower() == config.get('Telegram', 'telegram_handle') or usr.lower() == "mochafawx":
+			winner = message.split(" @")[1].lower()
+			call = users.find_one({"username":winner})
+			if call == None:
+				users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
+			point = random.randrange(100,500)
+			d = {"username":winner,"point_value":point,"date_inserted":datetime.datetime.now()}
+			pts.insert_one(d)
+			# next, find how many points they currently have.
+			call2 = [x for x in pts.find({"username":winner})]
+			total = 0
+			if call2 != None:
+				for y in call2:
+					total = total + y['point_value']
+			t = " "+str(point)+" Points to @"+message.split(" @")[1]+"! Total: "+str(total)+" official points!"
 	bot.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.UPLOAD_PHOTO)
-	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"points/"+points, 'rb'),caption="Points!")
+	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"points/"+points, 'rb'),caption="Points!"+t)
+	doUpdateMessage(bot, update)
+
 
 
 def spiral(bot, update):
@@ -171,6 +236,8 @@ def spiral(bot, update):
 	points = random.choice(os.listdir(config.get('General','path')+"spiral/"))
 	bot.sendChatAction(chat_id=chat_id,action=telegram.ChatAction.UPLOAD_PHOTO)
 	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"spiral/"+points, 'rb'),caption="Spiral~")
+	doUpdateMessage(bot, update)
+
 
 def win(bot, update):
 	chat_id = update.message.chat_id
@@ -178,6 +245,8 @@ def win(bot, update):
 	points = random.choice(os.listdir(config.get('General','path')+"win/"))
 	bot.sendChatAction(chat_id=chat_id,action=telegram.ChatAction.UPLOAD_PHOTO)
 	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"win/"+points, 'rb'),caption="YOU WIN")
+	doUpdateMessage(bot, update)
+
 
 def me(bot, update):
 	chat_id = update.message.chat_id
@@ -197,10 +266,13 @@ def magic(bot,update):
 	lines = open(config.get('General', 'path')+'fortune.txt').read().splitlines()
 	myline =random.choice(lines)
 	bot.sendMessage(chat_id=chat_id, text=myline)
+	doUpdateMessage(bot, update)
 
 def about(bot,update):
 	chat_id = update.message.chat_id
 	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.3 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
+	doUpdateMessage(bot, update)
+
 
 def moo(bot, update):
 	chat_id = update.message.chat_id
@@ -222,6 +294,9 @@ def moo(bot, update):
 	awu = awu+faces[rang2]
 
 	bot.sendMessage(chat_id=chat_id, text=awu)
+
+	doUpdateMessage(bot, update)
+
 
 
 def error(bot, update, error):
