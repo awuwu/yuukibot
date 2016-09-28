@@ -41,6 +41,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version
  * 1.1.2 -- Moo command, Begin concepts for new command structure
  * 1.1.3 -- Change lengths, random face picker
  * 1.2.0 -- Add updates and channel registry.
+ * 1.2.1 -- Add points values to /wins
 
 Contributing
 ---

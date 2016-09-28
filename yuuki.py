@@ -17,7 +17,7 @@ pts = db.points
 
 channels = db.channels
 
-yuuki_version = "v1.2.0"
+yuuki_version = "v1.2.1"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -243,8 +243,25 @@ def win(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 	points = random.choice(os.listdir(config.get('General','path')+"win/"))
+        usr = update.message.from_user.username
+	t = ''
+        if usr.lower() == config.get('Telegram', 'telegram_handle') or usr.lower() == "mochafawx":
+		winner = message.split(" @")[1].lower()
+		call = users.find_one({"username":winner})
+		if call == None:
+			users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
+		point = 500
+		d = {"username":winner,"point_value":point,"date_inserted":datetime.datetime.now()}
+		pts.insert_one(d)
+		# next, find how many points they currently have.
+		call2 = [x for x in pts.find({"username":winner})]
+		total = 0
+		if call2 != None:
+			for y in call2:
+				total = total + y['point_value']
+		t = " "+str(point)+" Points to @"+message.split(" @")[1]+" for the win! Total: "+str(total)+" official points!"
 	bot.sendChatAction(chat_id=chat_id,action=telegram.ChatAction.UPLOAD_PHOTO)
-	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"win/"+points, 'rb'),caption="YOU WIN")
+	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"win/"+points, 'rb'),caption="THAT WAS AWESOME! "+t)
 	doUpdateMessage(bot, update)
 
 
@@ -270,7 +287,7 @@ def magic(bot,update):
 
 def about(bot,update):
 	chat_id = update.message.chat_id
-	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version 1.1.3 Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
+	bot.sendMessage(chat_id=chat_id, text="Awu? Glad you asked! I am a YuukiBot! Version "+yuuki_version+" Written in Python using the libraries python-twitter and telegram! I am currently operated by @yuukari on Telegram and my source code is publically available at https://github.com/awuwu/yuukibot <3 awuwuwuwuwu~! <333")
 	doUpdateMessage(bot, update)
 
 
