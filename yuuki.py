@@ -17,7 +17,7 @@ pts = db.points
 
 channels = db.channels
 
-yuuki_version = "v1.2.1"
+yuuki_version = "v1.2.2"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -56,7 +56,7 @@ def doChannelCheck(channel):
 
 def doUpdateMessage(bot, update):
 	if doChannelCheck(update.message.chat_id):
-		bot.sendMessage(update.message.chat_id, text="Awu! Looks like this is the first time I've been run in this chat with my new version! Check out https://github.com/awuwu/yuukibot/wiki/Commands for more info!")
+		bot.sendMessage(update.message.chat_id, text="Awu! Looks like this is the first time I've been run in this chat with my new version! Check out https://github.com/awuwu/yuukibot/wiki/Commands for more info! My latest version is "+yuuki_version+"! Thanks for having me! <3")
 
 def set_value(bot, update):
 	chat_id = update.message.chat_id
@@ -315,6 +315,31 @@ def moo(bot, update):
 	doUpdateMessage(bot, update)
 
 
+def top5(bot, update):
+	bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+	di = users.find({})
+	us = {}
+	for x in di:
+		us[x['username']] = 0
+	dn = pts.find({})
+	for y in dn:
+		try:
+			us[y['username']] = us[y['username']] + y['point_value']
+		except:
+			print "Error"
+			pass
+	ls = [('undef',0)]
+	for key,value in us.iteritems():
+		ls.append((key,value))
+	ls.sort(key=lambda tup: tup[1], reverse=True)
+	tx = "Top 5 in Official Points:\n"
+	i = 0
+	while i != 6:
+		tx = tx + ls[i][0].replace("@"," ") + ": "+str(ls[i][1])+"\n"
+		i = i + 1
+	tx = tx + "For full points listings globally, visit: http://me.yuu.im/points/"
+	bot.sendMessage(chat_id = update.message.chat_id, text=tx)
+	
 
 def error(bot, update, error):
 	logging.warning('Update "%s" caused error "%s"' % (update, error))
@@ -333,6 +358,8 @@ updater.dispatcher.addHandler(CommandHandler('tweet', twitter))
 updater.dispatcher.addHandler(CommandHandler('fortune', awu))
 updater.dispatcher.addHandler(CommandHandler('about', about))
 updater.dispatcher.addHandler(CommandHandler('moo', moo))
+updater.dispatcher.addHandler(CommandHandler('top5', top5))
+updater.dispatcher.addHandler(CommandHandler('top', top5))
 
 #aliases
 updater.dispatcher.addHandler(CommandHandler('shouldi', magic))

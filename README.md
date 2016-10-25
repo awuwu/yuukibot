@@ -1,4 +1,4 @@
-YuukiBot v1.2.0
+YuukiBot v1.2.2
 ===
 
 About YuukiBot
@@ -23,6 +23,7 @@ Command | Description |
 `/me`      | Returns input after /me in bold, similar to how /me worked in IRC.
 `/tweet`   | Sends a Tweet to the userpage which is defined in the twitter section of the config file. For more on Twitter API, visit http://api.twitter.com/ for details. Can only be run by the user identified in `telegram_handle`. 
 `/about`   | Returns an about message on YuukiBot |
+`/top`     | Displays Top 5 in Point Counts |
 
 Note: commands will work even in a chatroom with multiple bots.
 
@@ -42,6 +43,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version
  * 1.1.3 -- Change lengths, random face picker
  * 1.2.0 -- Add updates and channel registry.
  * 1.2.1 -- Add points values to /wins
+ * 1.2.2 -- Add top command
 
 Contributing
 ---
