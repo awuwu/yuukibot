@@ -1,4 +1,4 @@
-YuukiBot v1.2.2
+YuukiBot v1.3.0
 ===
 
 About YuukiBot
@@ -44,6 +44,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version
  * 1.2.0 -- Add updates and channel registry.
  * 1.2.1 -- Add points values to /wins
  * 1.2.2 -- Add top command
+ * 1.3.0 -- Introduced standardized point measurements in multiples of 50. Included a DB rounding script to nearest 50.
 
 Contributing
 ---

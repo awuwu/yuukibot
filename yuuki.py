@@ -17,7 +17,7 @@ pts = db.points
 
 channels = db.channels
 
-yuuki_version = "v1.2.2"
+yuuki_version = "v1.3.0"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -214,7 +214,7 @@ def points(bot, update):
 			call = users.find_one({"username":winner})
 			if call == None:
 				users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
-			point = random.randrange(100,500)
+			point = random.choice([150,200,250,300,350,350,400,450])
 			d = {"username":winner,"point_value":point,"date_inserted":datetime.datetime.now()}
 			pts.insert_one(d)
 			# next, find how many points they currently have.
@@ -340,6 +340,7 @@ def top5(bot, update):
 	tx = tx + "For full points listings globally, visit: http://me.yuu.im/points/"
 	bot.sendMessage(chat_id = update.message.chat_id, text=tx)
 	
+	doUpdateMessage(bot, update)
 
 def error(bot, update, error):
 	logging.warning('Update "%s" caused error "%s"' % (update, error))
@@ -360,6 +361,7 @@ updater.dispatcher.addHandler(CommandHandler('about', about))
 updater.dispatcher.addHandler(CommandHandler('moo', moo))
 updater.dispatcher.addHandler(CommandHandler('top5', top5))
 updater.dispatcher.addHandler(CommandHandler('top', top5))
+
 
 #aliases
 updater.dispatcher.addHandler(CommandHandler('shouldi', magic))
