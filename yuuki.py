@@ -17,7 +17,7 @@ pts = db.points
 
 channels = db.channels
 
-yuuki_version = "v1.3.0"
+yuuki_version = "v1.3.1"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -268,7 +268,14 @@ def win(bot, update):
 def me(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
-	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
+#	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
+	bot.sendMessage(chat_id=chat_id, text="What do yuu think this is, IRC? owo")
+
+def shrug(bot, update):
+	chat_id = update.message.chat_id
+	message = update.message.text.encode('utf-8')
+#	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
+	bot.sendMessage(chat_id=chat_id, text="\u00AF\\_(\u30C4)_/\u00AF".decode('unicode-escape'))
 
 def twitter(bot, update):
 	chat_id = update.message.chat_id
@@ -361,6 +368,7 @@ updater.dispatcher.addHandler(CommandHandler('about', about))
 updater.dispatcher.addHandler(CommandHandler('moo', moo))
 updater.dispatcher.addHandler(CommandHandler('top5', top5))
 updater.dispatcher.addHandler(CommandHandler('top', top5))
+updater.dispatcher.addHandler(CommandHandler('shrug', shrug))
 
 
 #aliases

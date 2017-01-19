@@ -1,4 +1,4 @@
-YuukiBot v1.3.0
+YuukiBot v1.3.1
 ===
 
 About YuukiBot
@@ -17,6 +17,7 @@ Command | Description |
 `/points`  | Displays a GIF from the points/ directory.
 `/quote`   | Picks a random quote from the quote.txt file.
 `/fortune` | Takes input and processes mystical, mythical RNG to return a vaugely in-character answer somehow.
+`/shrug`   | Â Shrug~
 `/spiral`  | Displays a GIF from the spiral/ directory.
 `/moo`     | Makes YuukiBot Moo.
 `/bray`    | Makes YuukiBot Bray.
@@ -45,6 +46,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version
  * 1.2.1 -- Add points values to /wins
  * 1.2.2 -- Add top command
  * 1.3.0 -- Introduced standardized point measurements in multiples of 50. Included a DB rounding script to nearest 50.
+ * 1.3.1 -- Added /shrug
 
 Contributing
 ---
