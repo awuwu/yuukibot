@@ -1,4 +1,4 @@
-YuukiBot v1.3.1
+YuukiBot v1.4.0
 ===
 
 About YuukiBot
@@ -14,7 +14,7 @@ Commands
 Versioning
 ---
 
-Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version.
+Versioning is based on Major, Minor, Bugfix design. 1.4.0 is the current version.
 
  * 0.1.0 -- Initial Release
  * 0.2.0 -- Original Coding
