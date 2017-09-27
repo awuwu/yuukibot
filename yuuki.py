@@ -19,7 +19,7 @@ gusers = db.gusers4
 
 channels = db.channels
 
-yuuki_version = "v1.4.0"
+yuuki_version = "v1.4.1"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -382,7 +382,8 @@ def twitter(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 	usr = update.message.from_user.username
-	if usr.lower() == config.get('Telegram', 'telegram_handle'):
+	usr_id = update.message.from_user.id
+	if usr_id == config.get('Telegram', 'telegram_id'):
 		st = api.PostUpdate(message.replace("/tweet",""))
 		bot.sendMessage(chat_id=chat_id, text="Sent Tweet! https://www.twitter.com/"+config.get('Twitter','twitter_account')+"/status/"+str(st.id))
 
