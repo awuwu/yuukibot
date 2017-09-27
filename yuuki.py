@@ -14,10 +14,12 @@ db = client['yuukibot2']
 
 users = db.users
 pts = db.points
+bpts = db.bts4
+gusers = db.gusers4
 
 channels = db.channels
 
-yuuki_version = "v1.3.1"
+yuuki_version = "v1.4.0"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -38,6 +40,21 @@ except AttributeError:
 state = dict()
 context = dict()
 values = dict()
+
+def devChannels(bot, update):
+	chat_id = update.message.chat_id
+	message = update.message.text.encode('utf-8')
+	f = channels.find({})
+	lst = "Channels in system:\n"
+	for y in f:
+		print y
+		try:
+			if bot.getChat(str(y['channel'])).type != 'private':
+				lst = lst + bot.getChat(str(y['channel'])).title + ": "+y['version']+"\n"
+		except:
+			lst = lst + str(y['channel']) + ": No version.\n"
+	bot.sendMessage(chat_id,text=lst)
+
 
 def doChannelCheck(channel):
 	call = channels.find_one({"channel":channel})
@@ -200,30 +217,94 @@ def quote(bot, update):
 		bot.sendMessage(chat_id=chat_id, text=myline)
 	doUpdateMessage(bot, update)
 
+def migrateToBPTS(username,user_id):
+	n = gusers.insert_one({"username":username,"date_inserted":datetime.datetime.now(),"id":user_id,"infamy":0})
+	# now fetch points from this user handle
+	for x in pts.find({"username":username}):
+		bpts.insert_one({"id":user_id,"point_value":x['point_value'],"date_inserted":x['date_inserted'],"giver":"Probably Yuukari","infamy": False})
+	return True
+
+def infamyCheck(id):
+	n = gusers.find_one({"id":id})
+	if n == None:
+		return ""
+	else:
+		try:
+			return "Infamy: "+str(n['infamy'])
+		except:
+			gusers.update_one({"id":id},{"$set":{"infamy":0}})
+			return ""
+
+def doInfamy(bot, update):
+	winner_usr = update.message.from_user.username.lower()
+	winner_usr_id = update.message.from_user.id
+
+	call = users.find_one({"username":winner_usr})
+	call2 = gusers.find_one({"id":winner_usr_id})
+	if call2 == None and call != None:
+		# user has not been migrated
+		migrate = migrateToBPTS(winner_usr,winner_usr_id)
+	if call2 == None and call == None:
+		call2 = gusers.insert_one({"username":username,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
+
+
+	call3 = [x for x in bpts.find({"id":winner_usr_id})]
+	total = 0
+	if call3 != None:
+		for y in call3:
+			if y['infamy'] == False:
+				total = total + y['point_value']
+	infamy = 0
+	while total >= 10000:
+		total = total - 10000
+		infamy = infamy + 1
+	bpts.update_many({"id":winner_usr_id},{"$set": {"infamy": True}})
+	gusers.update_one({"id":winner_usr_id},{"$inc": {"infamy": infamy}})
+	update.message.reply_text("Points Reset! Infamy Gained: "+str(infamy)+" (You horrible monster)")
 
 	
 def points(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 	points = random.choice(os.listdir(config.get('General','path')+"points/"))
-        usr = update.message.from_user.username
+        usr = str(update.message.from_user.username).lower()
+	usr_id = update.message.from_user.id
+	winner_usr = update.message.reply_to_message.from_user.username.lower()
+	winner_usr_id = update.message.reply_to_message.from_user.id
 	t = ""
-	if message.find(" @") != -1:
-	        if usr.lower() == config.get('Telegram', 'telegram_handle') or usr.lower() == "mochafawx":
-			winner = message.split(" @")[1].lower()
-			call = users.find_one({"username":winner})
-			if call == None:
-				users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
-			point = random.choice([150,200,250,300,350,350,400,450])
-			d = {"username":winner,"point_value":point,"date_inserted":datetime.datetime.now()}
-			pts.insert_one(d)
-			# next, find how many points they currently have.
-			call2 = [x for x in pts.find({"username":winner})]
-			total = 0
-			if call2 != None:
-				for y in call2:
+        if usr_id == config.get('Telegram', 'telegram_id') or any(str(usr_id) in str(s.user.id) for s in bot.getChatAdministrators(chat_id=update.message.chat_id)):
+		#winner = message.split(" @")[1].lower()
+		call = users.find_one({"username":winner_usr})
+
+
+		#live migration to bpts/gusers
+
+		migrate = False
+
+		call2 = gusers.find_one({"id":winner_usr_id})
+		if call2 == None and call != None:
+			# user has not been migrated
+			if update.message.reply_to_message.from_user.username != None:
+				migrate = migrateToBPTS(winner_usr,winner_usr_id)
+		if call2 == None and call == None:
+			call2 = gusers.insert_one({"username":username,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
+
+		#if call == None:
+		#	users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
+
+		point = random.choice([150,200,250,300,350,350,400,450])
+		d = {"id":winner_usr_id,"point_value":point,"date_inserted":datetime.datetime.now(),"room":str(update.message.chat_id),"giver":str(usr_id),"infamy": False}
+		bpts.insert_one(d)
+		# next, find how many points they currently have.
+		call3 = [x for x in bpts.find({"id":winner_usr_id})]
+		total = 0
+		if call3 != None:
+			for y in call3:
+				if y['infamy'] == False:
 					total = total + y['point_value']
-			t = " "+str(point)+" Points to @"+message.split(" @")[1]+"! Total: "+str(total)+" official points!"
+		t = " "+str(point)+" Points to @"+update.message.reply_to_message.from_user.username+" "+infamyCheck(winner_usr_id)+"! Total: "+str(total)+" official points!"
+		if migrate:
+			t = t + "\n(You have also been migrated to the new points system!)"
 	bot.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.UPLOAD_PHOTO)
 	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"points/"+points, 'rb'),caption="Points!"+t)
 	doUpdateMessage(bot, update)
@@ -242,28 +323,48 @@ def spiral(bot, update):
 def win(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
-	points = random.choice(os.listdir(config.get('General','path')+"win/"))
-        usr = update.message.from_user.username
-	t = ''
-        if usr.lower() == config.get('Telegram', 'telegram_handle') or usr.lower() == "mochafawx":
-		winner = message.split(" @")[1].lower()
-		call = users.find_one({"username":winner})
-		if call == None:
-			users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
-		point = 500
-		d = {"username":winner,"point_value":point,"date_inserted":datetime.datetime.now()}
-		pts.insert_one(d)
-		# next, find how many points they currently have.
-		call2 = [x for x in pts.find({"username":winner})]
-		total = 0
-		if call2 != None:
-			for y in call2:
-				total = total + y['point_value']
-		t = " "+str(point)+" Points to @"+message.split(" @")[1]+" for the win! Total: "+str(total)+" official points!"
-	bot.sendChatAction(chat_id=chat_id,action=telegram.ChatAction.UPLOAD_PHOTO)
-	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"win/"+points, 'rb'),caption="THAT WAS AWESOME! "+t)
-	doUpdateMessage(bot, update)
+	points = random.choice(os.listdir(config.get('General','path')+"points/"))
+        usr = str(update.message.from_user.username).lower()
+	usr_id = update.message.from_user.id
+	winner_usr = update.message.reply_to_message.from_user.username.lower()
+	winner_usr_id = update.message.reply_to_message.from_user.id
+	t = ""
+        if usr_id == config.get('Telegram', 'telegram_id') or any(str(usr_id) in str(s.user.id) for s in bot.getChatAdministrators(chat_id=update.message.chat_id)):
+		#winner = message.split(" @")[1].lower()
+		call = users.find_one({"username":winner_usr})
 
+
+		#live migration to bpts/gusers
+
+		migrate = False
+
+		call2 = gusers.find_one({"id":winner_usr_id})
+		if call2 == None and call != None:
+			# user has not been migrated
+			if update.message.reply_to_message.from_user.username != None:
+				migrate = migrateToBPTS(winner_usr,winner_usr_id)
+		if call2 == None and call == None:
+			call2 = gusers.insert_one({"username":username,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
+
+		#if call == None:
+		#	users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
+
+		point = 500
+		d = {"id":winner_usr_id,"point_value":point,"date_inserted":datetime.datetime.now(),"room":str(update.message.chat_id),"giver":str(usr_id),"infamy": False}
+		bpts.insert_one(d)
+		# next, find how many points they currently have.
+		call3 = [x for x in bpts.find({"id":winner_usr_id})]
+		total = 0
+		if call3 != None:
+			for y in call3:
+				if y['infamy'] == False:
+					total = total + y['point_value']
+		t = "THAT WAS AWESOME! 500 points to @"+update.message.reply_to_message.from_user.username+" "+infamyCheck(winner_usr_id)+"! Total: "+str(total)+" official points!"
+		if migrate:
+			t = t + "\n(You have also been migrated to the new points system!)"
+	bot.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.UPLOAD_PHOTO)
+	bot.sendDocument(chat_id=chat_id,document=open(config.get('General','path')+"win/"+points, 'rb'),caption=t)
+	doUpdateMessage(bot, update)
 
 def me(bot, update):
 	chat_id = update.message.chat_id
@@ -291,6 +392,14 @@ def magic(bot,update):
 	myline =random.choice(lines)
 	bot.sendMessage(chat_id=chat_id, text=myline)
 	doUpdateMessage(bot, update)
+
+def whatNumberIsThis(bot,update):
+	chat_id = update.message.chat_id
+	bot.sendMessage(chat_id=chat_id, text=str(update.message.reply_to_message.message_id))
+
+def whereAmI(bot,update):
+	chat_id = update.message.chat_id
+	bot.sendMessage(chat_id=chat_id, text=str(chat_id))
 
 def about(bot,update):
 	chat_id = update.message.chat_id
@@ -321,29 +430,39 @@ def moo(bot, update):
 
 	doUpdateMessage(bot, update)
 
+def messageCount(bot, update):
+	faces = ["<w<", ">w>", "owo", "uwu"]
+
+	rang2 = random.randrange(0,len(faces)-1)
+	bot.sendMessage(chat_id=update.message.chat_id,text="It's Message #"+str(update.message.message_id)+" "+faces[rang2])
 
 def top5(bot, update):
 	bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-	di = users.find({})
+	di = gusers.find({})
 	us = {}
 	for x in di:
-		us[x['username']] = 0
-	dn = pts.find({})
+		us[x['id']] = [0,x['username'],x['infamy']]
+	dn = bpts.find({})
 	for y in dn:
 		try:
-			us[y['username']] = us[y['username']] + y['point_value']
+			if y['infamy'] == False:
+				us[y['id']][0] = us[y['id']][0] + y['point_value']
 		except:
 			print "Error"
 			pass
-	ls = [('undef',0)]
+	ls = [['undef',0,'The Collective Unconsious',0]]
 	for key,value in us.iteritems():
-		ls.append((key,value))
+		ls.append([key,value[0],value[1],value[2]])
 	ls.sort(key=lambda tup: tup[1], reverse=True)
-	tx = "Top 5 in Official Points:\n"
+	tx = "Top 10 in Official Points:\n"
 	i = 0
-	while i != 6:
-		tx = tx + ls[i][0].replace("@"," ") + ": "+str(ls[i][1])+"\n"
-		i = i + 1
+	#print ls
+	try:
+		while i != 11:
+			tx = tx + ls[i][2].replace("@"," ") + ": "+str(ls[i][1])+" Infamy: "+str(ls[i][3])+"\n"
+			i = i + 1
+	except:
+		pass
 	tx = tx + "For full points listings globally, visit: http://me.yuu.im/points/"
 	bot.sendMessage(chat_id = update.message.chat_id, text=tx)
 	
@@ -369,6 +488,8 @@ updater.dispatcher.addHandler(CommandHandler('moo', moo))
 updater.dispatcher.addHandler(CommandHandler('top5', top5))
 updater.dispatcher.addHandler(CommandHandler('top', top5))
 updater.dispatcher.addHandler(CommandHandler('shrug', shrug))
+updater.dispatcher.addHandler(CommandHandler('devwu', devChannels))
+updater.dispatcher.addHandler(CommandHandler('reset', doInfamy))
 
 
 #aliases
@@ -376,6 +497,9 @@ updater.dispatcher.addHandler(CommandHandler('shouldi', magic))
 updater.dispatcher.addHandler(CommandHandler('shouldwe', magic))
 updater.dispatcher.addHandler(CommandHandler('cani', magic))
 updater.dispatcher.addHandler(CommandHandler('mayi', magic))
+updater.dispatcher.addHandler(CommandHandler('wherearewe', whereAmI))
+updater.dispatcher.addHandler(CommandHandler('whatnumberisthis', whatNumberIsThis))
+updater.dispatcher.addHandler(CommandHandler('whatisthis', messageCount))
 
 #callback
 # The command

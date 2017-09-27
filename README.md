@@ -8,25 +8,8 @@ YuukiBot is a Telegram Bot made by Yuukari. Originally made to test out the Tele
 
 Commands
 ---
+[See Here](https://github.com/awuwu/yuukibot/wiki/Commands)
 
-Command | Description |
---- | :---
-`/awuwu`   | Makes YuukiBot Awuwu. Random Number of 'wu's are appended to the end.
-`/uwah`    | Makes YuukiBot Embarassed.
-`/win`     | Displays a GIF from the win/ directory.
-`/points`  | Displays a GIF from the points/ directory.
-`/quote`   | Picks a random quote from the quote.txt file.
-`/fortune` | Takes input and processes mystical, mythical RNG to return a vaugely in-character answer somehow.
-`/shrug`   | Â Shrug~
-`/spiral`  | Displays a GIF from the spiral/ directory.
-`/moo`     | Makes YuukiBot Moo.
-`/bray`    | Makes YuukiBot Bray.
-`/me`      | Returns input after /me in bold, similar to how /me worked in IRC.
-`/tweet`   | Sends a Tweet to the userpage which is defined in the twitter section of the config file. For more on Twitter API, visit http://api.twitter.com/ for details. Can only be run by the user identified in `telegram_handle`. 
-`/about`   | Returns an about message on YuukiBot |
-`/top`     | Displays Top 5 in Point Counts |
-
-Note: commands will work even in a chatroom with multiple bots.
 
 Versioning
 ---
@@ -47,6 +30,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.1.1 is the current version
  * 1.2.2 -- Add top command
  * 1.3.0 -- Introduced standardized point measurements in multiples of 50. Included a DB rounding script to nearest 50.
  * 1.3.1 -- Added /shrug
+ * 1.4.0 -- Introduced Infamy, /reset, and Remodeled the User and Points databases. In addition, this update allows Administrators to issue official points using /win and /points that are tracked on the /top list.
 
 Contributing
 ---
