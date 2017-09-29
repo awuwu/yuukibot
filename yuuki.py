@@ -1,9 +1,10 @@
 import logging, os, random, ConfigParser, datetime
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-from telegram import Emoji, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram import Emoji, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, ParseMode, InputTextMessageContent
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, InlineQueryHandler
 from pymongo import MongoClient
-import telegram, twitter
+from uuid import uuid4
+import telegram, twitter, re
 
 config = ConfigParser.RawConfigParser()
 config.read('config.cfg')
@@ -19,7 +20,7 @@ gusers = db.gusers4
 
 channels = db.channels
 
-yuuki_version = "v1.4.1"
+yuuki_version = "v1.5.0"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -287,7 +288,7 @@ def points(bot, update):
 			if update.message.reply_to_message.from_user.username != None:
 				migrate = migrateToBPTS(winner_usr,winner_usr_id)
 		if call2 == None and call == None:
-			call2 = gusers.insert_one({"username":username,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
+			call2 = gusers.insert_one({"username":winner_usr,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
 
 		#if call == None:
 		#	users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
@@ -472,6 +473,34 @@ def top5(bot, update):
 def error(bot, update, error):
 	logging.warning('Update "%s" caused error "%s"' % (update, error))
 
+def inlinequery(bot, update):
+	query = update.inline_query.query
+	results = list()
+
+	awu = "awu"
+	rang = random.randrange(1,45)
+	i = 0
+	while i <= rang:
+		awu = awu + "wu"
+		i = i + 1
+
+	faces = ["@w@", "<w<", ">w>", ">//w//<", "/)\\\\\\\\(\\", "@//@", "","","","","","","","","","","",""]
+
+	rang2 = random.randrange(0,len(faces)-1)
+
+
+	results.append(InlineQueryResultArticle(id=uuid4(),
+						title="Awu at some folk, fam",
+						input_message_content=InputTextMessageContent(awu+" "+faces[rang2]),
+						)
+			)
+	results.append(InlineQueryResultArticle(id=uuid4(),
+						title="Shrug at some folk, fam",
+						input_message_content=InputTextMessageContent("\u00AF\\_(\u30C4)_/\u00AF".decode('unicode-escape')),
+						)
+			)
+	update.inline_query.answer(results)
+
 updater = Updater(config.get('Telegram','api_key'))
 
 updater.dispatcher.addHandler(CommandHandler('awuwu', awuwu))
@@ -491,7 +520,7 @@ updater.dispatcher.addHandler(CommandHandler('top', top5))
 updater.dispatcher.addHandler(CommandHandler('shrug', shrug))
 updater.dispatcher.addHandler(CommandHandler('devwu', devChannels))
 updater.dispatcher.addHandler(CommandHandler('reset', doInfamy))
-
+updater.dispatcher.addHandler(InlineQueryHandler(inlinequery))
 
 #aliases
 updater.dispatcher.addHandler(CommandHandler('shouldi', magic))

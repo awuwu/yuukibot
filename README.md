@@ -1,4 +1,4 @@
-YuukiBot v1.4.1
+YuukiBot v1.5.0
 ===
 
 About YuukiBot
@@ -14,7 +14,7 @@ Commands
 Versioning
 ---
 
-Versioning is based on Major, Minor, Bugfix design. 1.4.1 is the current version.
+Versioning is based on Major, Minor, Bugfix design. 1.5.0 is the current version.
 
  * 0.1.0 -- Initial Release
  * 0.2.0 -- Original Coding
@@ -32,6 +32,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.4.1 is the current version
  * 1.3.1 -- Added /shrug
  * 1.4.0 -- Introduced Infamy, /reset, and Remodeled the User and Points databases. In addition, this update allows Administrators to issue official points using /win and /points that are tracked on the /top list.
  * 1.4.1 -- Small bugfix to make authorization more uniform
+ * 1.5.0 -- Added some inline fun
 
 Contributing
 ---
