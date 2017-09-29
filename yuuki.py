@@ -1,9 +1,10 @@
-import logging, os, random, ConfigParser, datetime
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-from telegram import Emoji, ForceReply, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-from pymongo import MongoClient
-import telegram, twitter
+import logging, os, random, ConfigParser, datetime 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s') 
+from telegram import ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, ParseMode, InputTextMessageContent 
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, InlineQueryHandler 
+from pymongo import MongoClient 
+from uuid import uuid4 
+import telegram, twitter, re
 
 config = ConfigParser.RawConfigParser()
 config.read('config.cfg')
@@ -19,7 +20,7 @@ gusers = db.gusers4
 
 channels = db.channels
 
-yuuki_version = "v1.4.1"
+yuuki_version = "v1.6.0"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -32,10 +33,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 MENU, AWAIT_CONFIRMATION, AWAIT_INPUT, DEBUG = range(4)
 
-try:
-	YES, NO = (Emoji.THUMBS_UP_SIGN.decode('utf-8'), Emoji.THUMBS_DOWN_SIGN.decode('utf-8'))
-except AttributeError:
-	YES, NO = (Emoji.THUMBS_UP_SIGN, Emoji.THUMBS_DOWN_SIGN)
+YES, NO = ("Yes", "No")
 
 state = dict()
 context = dict()
@@ -55,6 +53,9 @@ def devChannels(bot, update):
 			lst = lst + str(y['channel']) + ": No version.\n"
 	bot.sendMessage(chat_id,text=lst)
 
+def escape_markdown(text):
+	escape_chars = '\*_`\['
+	return re.sub(r'([%s])' % escape_chars, r'\\\1', text)
 
 def doChannelCheck(channel):
 	call = channels.find_one({"channel":channel})
@@ -287,7 +288,7 @@ def points(bot, update):
 			if update.message.reply_to_message.from_user.username != None:
 				migrate = migrateToBPTS(winner_usr,winner_usr_id)
 		if call2 == None and call == None:
-			call2 = gusers.insert_one({"username":username,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
+			call2 = gusers.insert_one({"username":winner_usr,"date_inserted":datetime.datetime.now(),"id":winner_usr_id,"infamy":0})
 
 		#if call == None:
 		#	users.insert_one({"username":winner,"date_inserted":datetime.datetime.now()})
@@ -377,6 +378,12 @@ def shrug(bot, update):
 	message = update.message.text.encode('utf-8')
 #	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
 	bot.sendMessage(chat_id=chat_id, text="\u00AF\\_(\u30C4)_/\u00AF".decode('unicode-escape'))
+
+def riot(bot, update):
+	chat_id = update.message.chat_id
+	message = update.message.text.encode('utf-8')
+#	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
+	bot.sendMessage(chat_id=chat_id, text="\xE3\x83\xBD\xE0\xBC\xBC\xE0\xBA\x88\xD9\x84\xCD\x9C\xE0\xBA\x88\xE0\xBC\xBD\xEF\xBE\x89\x20\x52\x49\x4F\x54\x20\xE3\x83\xBD\xE0\xBC\xBC\xE0\xBA\x88\xD9\x84\xCD\x9C\xE0\xBA\x88\xE0\xBC\xBD\xEF\xBE\x89".decode('utf-8'))
 
 def twitter(bot, update):
 	chat_id = update.message.chat_id
@@ -472,47 +479,85 @@ def top5(bot, update):
 def error(bot, update, error):
 	logging.warning('Update "%s" caused error "%s"' % (update, error))
 
+def inlinequery(bot, update):
+	query = update.inline_query.query
+	results = list()
+
+	awu = "awu"
+	rang = random.randrange(1,45)
+	i = 0
+	while i <= rang:
+		awu = awu + "wu"
+		i = i + 1
+
+	faces = ["@w@", "<w<", ">w>", ">//w//<", "/)\\\\\\\\(\\", "@//@", "","","","","","","","","","","",""]
+
+	rang2 = random.randrange(0,len(faces)-1)
+
+
+	results.append(InlineQueryResultArticle(id=uuid4(),
+						title="Awu at some folk, fam",
+						input_message_content=InputTextMessageContent(awu+" "+faces[rang2]),
+						)
+			)
+	results.append(InlineQueryResultArticle(id=uuid4(),
+						title="Shrug at some folk, fam",
+						input_message_content=InputTextMessageContent("\u00AF\\_(\u30C4)_/\u00AF".decode('unicode-escape')),
+						)
+			)
+	results.append(InlineQueryResultArticle(id=uuid4(),
+						title="Bot at some folk, fam",
+						input_message_content=InputTextMessageContent("``` %s ```" % query, parse_mode=ParseMode.MARKDOWN),
+						)
+			)
+	update.inline_query.answer(results)
+
+def textHandle(bot, update):
+	print str(update.message.chat.title)+": "+str(update.message.from_user.username)+": "+str(update.message.text)
+
 updater = Updater(config.get('Telegram','api_key'))
 
-updater.dispatcher.addHandler(CommandHandler('awuwu', awuwu))
-updater.dispatcher.addHandler(CommandHandler('uwah', uwah))
-updater.dispatcher.addHandler(CommandHandler('bray', bray))
-updater.dispatcher.addHandler(CommandHandler('quote', quote))
-updater.dispatcher.addHandler(CommandHandler('points', points))
-updater.dispatcher.addHandler(CommandHandler('spiral', spiral))
-updater.dispatcher.addHandler(CommandHandler('win', win))
-updater.dispatcher.addHandler(CommandHandler('me', me))
-updater.dispatcher.addHandler(CommandHandler('tweet', twitter))
-updater.dispatcher.addHandler(CommandHandler('fortune', awu))
-updater.dispatcher.addHandler(CommandHandler('about', about))
-updater.dispatcher.addHandler(CommandHandler('moo', moo))
-updater.dispatcher.addHandler(CommandHandler('top5', top5))
-updater.dispatcher.addHandler(CommandHandler('top', top5))
-updater.dispatcher.addHandler(CommandHandler('shrug', shrug))
-updater.dispatcher.addHandler(CommandHandler('devwu', devChannels))
-updater.dispatcher.addHandler(CommandHandler('reset', doInfamy))
-
+updater.dispatcher.add_handler(CommandHandler('awuwu', awuwu))
+updater.dispatcher.add_handler(CommandHandler('uwah', uwah))
+updater.dispatcher.add_handler(CommandHandler('bray', bray))
+updater.dispatcher.add_handler(CommandHandler('quote', quote))
+updater.dispatcher.add_handler(CommandHandler('points', points))
+updater.dispatcher.add_handler(CommandHandler('spiral', spiral))
+updater.dispatcher.add_handler(CommandHandler('win', win))
+updater.dispatcher.add_handler(CommandHandler('me', me))
+updater.dispatcher.add_handler(CommandHandler('tweet', twitter))
+updater.dispatcher.add_handler(CommandHandler('fortune', awu))
+updater.dispatcher.add_handler(CommandHandler('about', about))
+updater.dispatcher.add_handler(CommandHandler('moo', moo))
+updater.dispatcher.add_handler(CommandHandler('top5', top5))
+updater.dispatcher.add_handler(CommandHandler('top', top5))
+updater.dispatcher.add_handler(CommandHandler('riot', riot))
+updater.dispatcher.add_handler(CommandHandler('shrug', shrug))
+updater.dispatcher.add_handler(CommandHandler('devwu', devChannels))
+updater.dispatcher.add_handler(CommandHandler('reset', doInfamy))
+updater.dispatcher.add_handler(InlineQueryHandler(inlinequery))
 
 #aliases
-updater.dispatcher.addHandler(CommandHandler('shouldi', magic))
-updater.dispatcher.addHandler(CommandHandler('shouldwe', magic))
-updater.dispatcher.addHandler(CommandHandler('cani', magic))
-updater.dispatcher.addHandler(CommandHandler('mayi', magic))
-updater.dispatcher.addHandler(CommandHandler('wherearewe', whereAmI))
-updater.dispatcher.addHandler(CommandHandler('whatnumberisthis', whatNumberIsThis))
-updater.dispatcher.addHandler(CommandHandler('whatisthis', messageCount))
+updater.dispatcher.add_handler(CommandHandler('shouldi', magic))
+updater.dispatcher.add_handler(CommandHandler('shouldwe', magic))
+updater.dispatcher.add_handler(CommandHandler('cani', magic))
+updater.dispatcher.add_handler(CommandHandler('mayi', magic))
+updater.dispatcher.add_handler(CommandHandler('wherearewe', whereAmI))
+updater.dispatcher.add_handler(CommandHandler('whatnumberisthis', whatNumberIsThis))
+updater.dispatcher.add_handler(CommandHandler('whatisthis', messageCount))
 
 #callback
 # The command
-updater.dispatcher.add_handler(CommandHandler('set', set_value))
+#updater.dispatcher.add_handler(CommandHandler('set', set_value))
 #updater.dispatcher.add_handler(CommandHandler('awu', awu))
 # The answer
-updater.dispatcher.add_handler(MessageHandler([Filters.text], entered_value))
+#updater.dispatcher.add_handler(MessageHandler([Filters.text], entered_value))
 # The confirmation
 #updater.dispatcher.add_handler(CallbackQueryHandler(confirm_value))
 updater.dispatcher.add_handler(CallbackQueryHandler(editAwu2))
 updater.dispatcher.add_error_handler(error)
 
+#updater.dispatcher.add_handler(MessageHandler(Filters.all, textHandle))
 
 updater.start_polling()
 updater.idle()
