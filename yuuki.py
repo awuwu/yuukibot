@@ -506,6 +506,11 @@ def inlinequery(bot, update):
 						)
 			)
 	results.append(InlineQueryResultArticle(id=uuid4(),
+						title="Riot at some folk, fam",
+						input_message_content=InputTextMessageContent("\xE3\x83\xBD\xE0\xBC\xBC\xE0\xBA\x88\xD9\x84\xCD\x9C\xE0\xBA\x88\xE0\xBC\xBD\xEF\xBE\x89\x20\x52\x49\x4F\x54\x20\xE3\x83\xBD\xE0\xBC\xBC\xE0\xBA\x88\xD9\x84\xCD\x9C\xE0\xBA\x88\xE0\xBC\xBD\xEF\xBE\x89".decode('utf-8')),
+						)
+			)
+	results.append(InlineQueryResultArticle(id=uuid4(),
 						title="Bot at some folk, fam",
 						input_message_content=InputTextMessageContent("``` %s ```" % query, parse_mode=ParseMode.MARKDOWN),
 						)

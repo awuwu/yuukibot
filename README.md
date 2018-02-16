@@ -1,4 +1,4 @@
-YuukiBot v1.6.0
+YuukiBot v1.6.1
 ===
 
 About YuukiBot
@@ -34,6 +34,7 @@ Versioning is based on Major, Minor, Bugfix design. 1.5.0 is the current version
  * 1.4.1 -- Small bugfix to make authorization more uniform
  * 1.5.0 -- Added some inline fun
  * 1.6.0 -- Added /riot
+ * 1.6.1 -- Added Riot as an inline option
 
 Contributing
 ---
