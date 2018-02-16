@@ -20,7 +20,7 @@ gusers = db.gusers4
 
 channels = db.channels
 
-yuuki_version = "v1.6.0"
+yuuki_version = "v1.6.1"
 
 api = twitter.Api(consumer_key=config.get('Twitter','consumer_key'),
 		  consumer_secret=config.get('Twitter','consumer_secret'),
@@ -378,12 +378,14 @@ def shrug(bot, update):
 	message = update.message.text.encode('utf-8')
 #	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
 	bot.sendMessage(chat_id=chat_id, text="\u00AF\\_(\u30C4)_/\u00AF".decode('unicode-escape'))
+	doUpdateMessage(bot, update)
 
 def riot(bot, update):
 	chat_id = update.message.chat_id
 	message = update.message.text.encode('utf-8')
 #	bot.sendMessage(chat_id=chat_id, text="*"+update.message.from_user.first_name+" "+message.lstrip('/me')+"*",parse_mode="Markdown")
 	bot.sendMessage(chat_id=chat_id, text="\xE3\x83\xBD\xE0\xBC\xBC\xE0\xBA\x88\xD9\x84\xCD\x9C\xE0\xBA\x88\xE0\xBC\xBD\xEF\xBE\x89\x20\x52\x49\x4F\x54\x20\xE3\x83\xBD\xE0\xBC\xBC\xE0\xBA\x88\xD9\x84\xCD\x9C\xE0\xBA\x88\xE0\xBC\xBD\xEF\xBE\x89".decode('utf-8'))
+	doUpdateMessage(bot, update)
 
 def twitter(bot, update):
 	chat_id = update.message.chat_id
