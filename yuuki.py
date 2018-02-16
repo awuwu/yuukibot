@@ -1,9 +1,9 @@
-import logging, os, random, ConfigParser, datetime 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s') 
-from telegram import ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, ParseMode, InputTextMessageContent 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, InlineQueryHandler 
-from pymongo import MongoClient 
-from uuid import uuid4 
+import logging, os, random, ConfigParser, datetime
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+from telegram import ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, ParseMode, InputTextMessageContent
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, InlineQueryHandler
+from pymongo import MongoClient
+from uuid import uuid4
 import telegram, twitter, re
 
 config = ConfigParser.RawConfigParser()
